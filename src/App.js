@@ -91,61 +91,6 @@ const ThemeProvider = ({ children }) => {
 const useTheme = () => useContext(ThemeContext);
 
 // -- MOCK DATA AND UTILS -- //
-const generateInitialTodos = () => {
-  const todos = [];
-  for (let i = 1; i <= 25; i++) {
-    const deadlineDate = new Date(
-      new Date().getTime() + i * 24 * 60 * 60 * 1000
-    );
-    todos.push({
-      id: i,
-      title: `Task number ${i}`,
-      description: `This is a sample description for task ${i}.`,
-      completed: i > 22, // Last 3 are completed
-      isExpanded: false,
-      isStarred: i % 4 === 0, // Every 4th task is starred
-      startDate: null,
-      deadline: deadlineDate.toISOString(), // Stored as UTC
-      meetingLink: "",
-      reminders: [{ id: 1, minutesBefore: 30, type: "both" }],
-      subTodos: [],
-    });
-  }
-  // Add one urgent task
-  todos.push({
-    id: 26,
-    title: "URGENT: Submit Final Report",
-    description: "Final report is due in a few hours!",
-    completed: false,
-    isExpanded: true,
-    isStarred: true,
-    startDate: new Date(
-      new Date().getTime() - 2 * 60 * 60 * 1000
-    ).toISOString(), // Started 2 hours ago
-    deadline: new Date(new Date().getTime() + 3 * 60 * 60 * 1000).toISOString(),
-    meetingLink: "",
-    reminders: [
-      { id: 1, minutesBefore: 60, type: "notification" },
-      { id: 2, minutesBefore: 15, type: "both" },
-    ],
-    subTodos: [],
-  });
-  // Add a task with a future start date
-  todos.push({
-    id: 27,
-    title: "Prepare for Tokyo Presentation",
-    description: "Begin preparing slides for the presentation in Tokyo.",
-    completed: false,
-    isExpanded: false,
-    isStarred: true,
-    startDate: "2025-06-18T09:00:00.000+09:00", // Example: 9 AM in JST
-    deadline: "2025-06-20T17:00:00.000+09:00",
-    meetingLink: "",
-    reminders: [{ id: 1, minutesBefore: 60, type: "alarm" }],
-    subTodos: [],
-  });
-  return todos;
-};
 
 const newTodoTemplate = {
   id: null,
@@ -1189,9 +1134,9 @@ export default function App() {
   const [todos, setTodos] = useState(() => {
     try {
       const savedTodos = localStorage.getItem("todos");
-      return savedTodos ? JSON.parse(savedTodos) : generateInitialTodos();
+      return savedTodos ? JSON.parse(savedTodos) : [];
     } catch {
-      return generateInitialTodos();
+      return [];
     }
   });
 

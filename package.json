@@ -22,7 +22,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "tailwindcss -i src/input.css -o src/output.css && react-scripts start",
     "build": "tailwindcss -i src/input.css -o src/output.css && react-scripts build",
     "build-css": "tailwindcss -i src/input.css -o src/output.css",
     "test": "react-scripts test",
