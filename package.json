@@ -22,9 +22,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "tailwindcss -i src/input.css -o src/output.css && react-scripts start",
-    "build": "tailwindcss -i src/input.css -o src/output.css && react-scripts build",
-    "build-css": "tailwindcss -i src/input.css -o src/output.css",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "postinstall": "flowbite-react patch && flowbite-react register"
@@ -51,6 +50,6 @@
     "@tailwindcss/postcss": "^4.1.10",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.10"
+    "tailwindcss": "^3.4.17"
   }
 }

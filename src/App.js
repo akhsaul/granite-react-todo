@@ -1,10 +1,9 @@
 import "@xyflow/react/dist/style.css";
-import "./output.css";
+import "./App.css";
 import React, {
   useState,
   useEffect,
   useMemo,
-  useCallback,
   createContext,
   useContext,
 } from "react";
@@ -38,13 +37,7 @@ import {
   ExternalLink,
   GripVertical,
 } from "lucide-react";
-import {
-  format,
-  parseISO,
-  isPast,
-  differenceInSeconds,
-  isFuture,
-} from "date-fns";
+import { format, parseISO, isPast, differenceInSeconds } from "date-fns";
 import ReactMarkdown from "react-markdown";
 // For full GitHub-Flavored Markdown support (tables, strikethrough, etc.),
 import remarkGfm from "remark-gfm";
@@ -908,7 +901,7 @@ const TodoItem = ({ todo, onUpdate, onDelete }) => {
         todo.completed ? "opacity-60" : ""
       } ${
         todo.isStarred && !todo.completed
-          ? "border-yellow-400"
+          ? "border-yellow-400 dark:border-yellow-400"
           : "border-gray-200"
       }`}
     >
