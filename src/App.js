@@ -226,11 +226,51 @@ export default function App() {
   };
 
   const handleUpdateTodo = (id, updates) => {
-    setTodos(todos.map((t) => (t.id === id ? { ...t, ...updates } : t)));
+    let updatedTodoForBroadcast = null;
+
+    // We manually map to capture the fully updated object *before* setting state.
+    const newTodos = todos.map((t) => {
+      if (t.id === id) {
+        // Create the complete updated object
+        const updatedItem = { ...t, ...updates };
+        // Capture it for our broadcast message
+        updatedTodoForBroadcast = updatedItem;
+        return updatedItem;
+      }
+      return t;
+    });
+
+    // Set the new state
+    setTodos(newTodos);
+
+    // Now, broadcast the change if an item was actually updated
+    if (updatedTodoForBroadcast) {
+      try {
+        // Use the generic channel name
+        const channel = new BroadcastChannel("todo_app_sync_channel");
+        channel.postMessage({
+          type: "TODO_UPDATE",
+          payload: updatedTodoForBroadcast,
+        });
+        channel.close();
+      } catch (e) {
+        console.error("Broadcast channel failed", e);
+      }
+    }
   };
 
   const handleDeleteTodo = (id) => {
     setTodos(todos.filter((t) => t.id !== id));
+
+    // Broadcast that a task was deleted
+    try {
+      const channel = new BroadcastChannel("todo_app_sync_channel");
+      // For deletion, we only need to send the ID
+      channel.postMessage({ type: "TODO_DELETE", payload: { id: id } });
+      channel.close();
+    } catch (e) {
+      console.error("Broadcast channel failed", e);
+    }
   };
 
   // This function will be passed down to TodoItem to open the modal.
@@ -421,6 +461,7 @@ export default function App() {
                             todo={todo}
                             onUpdate={handleUpdateTodo}
                             onDelete={handleDeleteTodo}
+                            onStartEdit={handleStartEdit}
                           />
                         ))
                       ) : (

@@ -23,6 +23,55 @@ export const StickyNoteView = ({ stickyId }) => {
     }
   }, [stickyId]);
 
+  // This new useEffect sets up the theme listener.
+  useEffect(() => {
+    let channel;
+    try {
+      // Connect to the same named channel.
+      channel = new BroadcastChannel("todo_app_sync_channel");
+
+      // This function will execute whenever a message is received on the channel.
+      channel.onmessage = (event) => {
+        if (!event.data || !event.data.type) return;
+
+        // Handle Theme Changes
+        if (event.data && event.data.type === "THEME_CHANGE") {
+          const newTheme = event.data.theme;
+          const root = window.document.documentElement;
+
+          // Apply the new theme to the sticky note's HTML element.
+          root.classList.remove("light", "dark");
+          root.classList.add(newTheme);
+        } else if (event.data.type === "TODO_UPDATE") {
+          const updatedTask = event.data.payload;
+          // IMPORTANT: Only update if the message is for THIS sticky note
+          if (updatedTask && updatedTask.id.toString() === stickyId) {
+            setTask(updatedTask);
+            document.title = `Sticky: ${updatedTask.title}`;
+          }
+        } else if (event.data.type === "TODO_DELETE") {
+          const deletedInfo = event.data.payload;
+          // If this task was deleted, close the window.
+          if (deletedInfo && deletedInfo.id.toString() === stickyId) {
+            // We disable the onmessage handler to prevent errors before closing
+            channel.onmessage = null;
+            window.close();
+          }
+        }
+      };
+    } catch (error) {
+      console.error("BroadcastChannel is not supported or failed:", error);
+    }
+
+    // This is a crucial cleanup function.
+    // It runs when the component unmounts (i.e., when the window is closed).
+    return () => {
+      if (channel) {
+        channel.close();
+      }
+    };
+  }, [stickyId]); // The empty dependency array ensures this effect runs only once on mount.
+
   // A simple loading/error/content renderer
   if (error) {
     return (

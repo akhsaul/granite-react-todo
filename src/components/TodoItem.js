@@ -20,14 +20,12 @@ import {
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-import { useTheme } from "../context/ThemeContext";
 import { CountdownTimer } from "./CountdownTimer";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { SubTodoItem } from "./SubTodoItem";
 
 export const TodoItem = ({ todo, onUpdate, onDelete, onStartEdit }) => {
   const [newSubTodo, setNewSubTodo] = useState("");
-  const { theme } = useTheme();
 
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
@@ -286,7 +284,7 @@ export const TodoItem = ({ todo, onUpdate, onDelete, onStartEdit }) => {
                 />
               ))}
             </div>
-            <div className="flex items-center space-x-2 pt-2">
+            <div className="flex items-center space-x-2 pt-2 pb-2">
               <input
                 type="text"
                 value={newSubTodo}

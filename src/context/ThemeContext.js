@@ -14,9 +14,19 @@ export const ThemeProvider = ({ children }) => {
     localStorage.setItem("todo-theme", theme);
 
     // Communicate theme changes to other tabs/windows (for sticky notes)
-    const channel = new BroadcastChannel("todo_app_theme_channel");
-    channel.postMessage({ type: "THEME_CHANGE", theme });
-    channel.close();
+    try {
+      // We use a uniquely named channel for our app.
+      const channel = new BroadcastChannel("todo_app_sync_channel");
+
+      // Send an object with a type and payload. This is good practice for future extensibility.
+      channel.postMessage({ type: "THEME_CHANGE", theme: theme });
+
+      // Close the channel after sending the message to clean up resources.
+      channel.close();
+    } catch (error) {
+      // This will catch errors in browsers that don't support BroadcastChannel.
+      console.error("BroadcastChannel is not supported or failed:", error);
+    }
   }, [theme]);
 
   const toggleTheme = () => {
