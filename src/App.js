@@ -1429,11 +1429,16 @@ export default function App() {
               </div>
             </div>
 
-            {/* Search Bar */}
+            {/* Search Bar - (Updated) */}
             <div className="mb-8">
-              <div className="relative">
+              {/* 
+    - No more "relative" on the container. We use flexbox instead.
+    - The container itself is styled to look like an input field.
+    - `focus-within` applies the ring to the container when the input inside is focused.
+  */}
+              <div className="flex items-center w-full px-3 border rounded-lg bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus-within:ring-2 focus-within:ring-blue-500 transition-shadow duration-200">
                 <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="text-gray-400" // Icon is now a simple flex item.
                   size={20}
                 />
                 <input
@@ -1441,7 +1446,8 @@ export default function App() {
                   placeholder="Search tasks by title..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  // The input is now transparent and has no border or outline; it relies on its parent for styling.
+                  className="w-full pl-2 pr-4 py-2 bg-transparent focus:outline-none"
                 />
               </div>
             </div>
