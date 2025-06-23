@@ -37,8 +37,10 @@ import { ThemeToggle } from "./components/ThemeToggle";
 import { TodoItem } from "./components/TodoItem";
 import { TodoModal } from "./components/TodoModal";
 import { TimelineView } from "./components/timeline/TimelineView";
+import { StickyNoteView } from "./components/StickyNoteView";
 
 export default function App() {
+  // Move all hooks to the top before any conditional logic
   const [todos, setTodos] = useState(() => {
     try {
       const savedTodos = localStorage.getItem("todos");
@@ -107,45 +109,12 @@ export default function App() {
     };
   }, [todos]);
 
-  const handleRequestNotification = async () => {
-    const permission = await requestNotificationPermission();
-    setNotificationPermission(permission);
-  };
-
-  const handleCreateTodo = (newTodoData) => {
-    const newTodo = {
-      ...newTodoData,
-      id: Date.now(),
-    };
-    setTodos([newTodo, ...todos]);
-    setIsCreating(false);
-  };
-
-  const handleUpdateTodo = (id, updates) => {
-    setTodos(todos.map((t) => (t.id === id ? { ...t, ...updates } : t)));
-  };
-
-  const handleDeleteTodo = (id) => {
-    setTodos(todos.filter((t) => t.id !== id));
-  };
-
   // Find the full todo object based on the ID.
   // We use useMemo to prevent recalculating this on every render.
   const todoToEdit = useMemo(
     () => todos.find((todo) => todo.id === editingTodoId),
     [todos, editingTodoId]
   );
-
-  // This function will be passed down to TodoItem to open the modal.
-  const handleStartEdit = (id) => {
-    setEditingTodoId(id);
-  };
-
-  // This function handles the save action from the edit modal.
-  const handleSaveEdit = (updatedTodo) => {
-    handleUpdateTodo(updatedTodo.id, updatedTodo);
-    setEditingTodoId(null); // Close the modal after saving
-  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -154,21 +123,6 @@ export default function App() {
       },
     })
   );
-
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      const todoId = active.id;
-      const isStarred = active.data.current.isStarred;
-      const targetContainer = over.id;
-
-      if (targetContainer === "important-tasks" && !isStarred) {
-        handleUpdateTodo(todoId, { isStarred: true });
-      } else if (targetContainer === "other-tasks" && isStarred) {
-        handleUpdateTodo(todoId, { isStarred: false });
-      }
-    }
-  };
 
   const {
     paginatedImportantTasks,
@@ -242,6 +196,68 @@ export default function App() {
       setOtherPage(1);
     }
   }, [otherPage, totalOtherPages]);
+
+  // Now check for sticky view AFTER all hooks are declared
+  const searchParams = new URLSearchParams(window.location.search);
+  const stickyId = searchParams.get("sticky");
+
+  // If the 'sticky' ID exists, render the dedicated sticky note view and stop.
+  if (stickyId) {
+    return (
+      <ThemeProvider>
+        <StickyNoteView stickyId={stickyId} />
+      </ThemeProvider>
+    );
+  }
+
+  // Handler functions
+  const handleRequestNotification = async () => {
+    const permission = await requestNotificationPermission();
+    setNotificationPermission(permission);
+  };
+
+  const handleCreateTodo = (newTodoData) => {
+    const newTodo = {
+      ...newTodoData,
+      id: Date.now(),
+    };
+    setTodos([newTodo, ...todos]);
+    setIsCreating(false);
+  };
+
+  const handleUpdateTodo = (id, updates) => {
+    setTodos(todos.map((t) => (t.id === id ? { ...t, ...updates } : t)));
+  };
+
+  const handleDeleteTodo = (id) => {
+    setTodos(todos.filter((t) => t.id !== id));
+  };
+
+  // This function will be passed down to TodoItem to open the modal.
+  const handleStartEdit = (id) => {
+    setEditingTodoId(id);
+  };
+
+  // This function handles the save action from the edit modal.
+  const handleSaveEdit = (updatedTodo) => {
+    handleUpdateTodo(updatedTodo.id, updatedTodo);
+    setEditingTodoId(null); // Close the modal after saving
+  };
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const todoId = active.id;
+      const isStarred = active.data.current.isStarred;
+      const targetContainer = over.id;
+
+      if (targetContainer === "important-tasks" && !isStarred) {
+        handleUpdateTodo(todoId, { isStarred: true });
+      } else if (targetContainer === "other-tasks" && isStarred) {
+        handleUpdateTodo(todoId, { isStarred: false });
+      }
+    }
+  };
 
   return (
     <ReactFlowProvider>

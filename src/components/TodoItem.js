@@ -22,6 +22,7 @@ import remarkGfm from "remark-gfm";
 
 import { useTheme } from "../context/ThemeContext";
 import { CountdownTimer } from "./CountdownTimer";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import { SubTodoItem } from "./SubTodoItem";
 
 export const TodoItem = ({ todo, onUpdate, onDelete, onStartEdit }) => {
@@ -53,80 +54,15 @@ export const TodoItem = ({ todo, onUpdate, onDelete, onStartEdit }) => {
   const handleDelete = () => onDelete(todo.id);
   const handleEdit = () => onStartEdit(todo.id);
 
+  // Use the hook to check for desktop screen sizes (Tailwind's `md` breakpoint)
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   const handleStickyNote = () => {
-    const todoDataString = JSON.stringify(todo);
-    const stickyHTML = `
-            <!DOCTYPE html>
-            <html lang="en" class="${theme}">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Sticky: ${todo.title}</title>
-                <script src="https://cdn.tailwindcss.com"></script>
-                <style>
-                    body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overscroll-behavior: none; }
-                </style>
-            </head>
-            <body class="bg-yellow-100 dark:bg-gray-800 p-4 font-sans">
-                <div id="sticky-content"></div>
-                <script>
-                    const todo = ${todoDataString};
-                    const formatDisplayDate = (isoString, prefix) => {
-                        if (!isoString) return '';
-                        const date = new Date(isoString);
-                        return prefix + new Intl.DateTimeFormat(undefined, {
-                            year: 'numeric', month: 'short', day: 'numeric',
-                            hour: 'numeric', minute: 'numeric'
-                        }).format(date);
-                    };
-                    const isFuture = (isoString) => new Date(isoString) > new Date();
-                    let displayDate = '';
-                    if(todo.startDate && isFuture(todo.startDate)) {
-                        displayDate = formatDisplayDate(todo.startDate, 'Starts: ');
-                    } else if(todo.deadline) {
-                        displayDate = formatDisplayDate(todo.deadline, 'Due: ');
-                    }
-                    const subTodosHTML = todo.subTodos.map(sub => \`
-                        <li class="flex items-center space-x-2 text-sm">
-                            <span class="\${sub.completed ? 'text-green-500' : 'text-gray-400'}">\${sub.completed ? '✔' : '○'}</span>
-                            <span class="\${sub.completed ? 'line-through text-gray-500' : 'text-gray-800 dark:text-gray-200'}">\${sub.title}</span>
-                        </li>
-                    \`).join('');
-                    const content = \`
-                        <div class="bg-white dark:bg-gray-900 shadow-lg rounded-lg p-6 w-full max-w-md mx-auto">
-                            <h1 class="text-2xl font-bold mb-2 text-gray-900 dark:text-white">\${todo.title}</h1>
-                            \${displayDate ? \`<p class="text-sm text-gray-500 dark:text-gray-400 mb-4">\${displayDate}</p>\` : ''}
-                            <div class="max-w-none mb-4 text-gray-700 dark:text-gray-300">\${todo.description.replace(/\\n/g, '<br />')}</div>
-                            \${todo.subTodos.length > 0 ? \`
-                                <div>
-                                    <h2 class="font-semibold mb-2 text-gray-800 dark:text-white">Sub-tasks</h2>
-                                    <ul class="space-y-1">\${subTodosHTML}</ul>
-                                </div>
-                            \` : ''}
-                        </div>
-                    \`;
-                    document.getElementById('sticky-content').innerHTML = content;
-                    const stickyThemeChannel = new BroadcastChannel('todo_app_theme_channel');
-                    stickyThemeChannel.onmessage = (event) => {
-                        if (event.data.type === 'THEME_CHANGE') {
-                            const root = document.documentElement;
-                            root.classList.remove('light', 'dark');
-                            root.classList.add(event.data.theme);
-                        }
-                    };
-                </script>
-            </body>
-            </html>
-        `;
-    const stickyWindow = window.open(
-      "",
-      "_blank",
-      "width=450,height=550,scrollbars=yes,resizable=yes"
-    );
-    if (stickyWindow) {
-      stickyWindow.document.write(stickyHTML);
-      stickyWindow.document.close();
-    }
+    // Construct the URL to open the same app but with a query parameter
+    const url = `${window.location.origin}?sticky=${todo.id}`;
+    // Define the window features: smaller and not resizable
+    const features = "width=450,height=550,resizable=no,scrollbars=yes";
+
+    window.open(url, `_blank`, features);
   };
 
   const handleSubTodoUpdate = (subTodoId, updates) => {
@@ -266,12 +202,14 @@ export const TodoItem = ({ todo, onUpdate, onDelete, onStartEdit }) => {
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <button
-              onClick={handleStickyNote}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-yellow-500"
-            >
-              <ExternalLink size={18} />
-            </button>
+            {isDesktop && (
+              <button
+                onClick={handleStickyNote}
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-yellow-500"
+              >
+                <ExternalLink size={18} />
+              </button>
+            )}
             <button
               onClick={handleStarToggle}
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
